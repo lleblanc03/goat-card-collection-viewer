@@ -1,0 +1,23 @@
+body{
+font-family:Arial;
+padding:20px;
+}
+
+input{
+width:100%;
+padding:10px;
+font-size:16px;
+margin-bottom:10px;
+}
+
+button{
+padding:10px;
+font-size:16px;
+}
+
+.card{
+border:1px solid #ddd;
+padding:10px;
+margin-top:10px;
+border-radius:5px;
+}
