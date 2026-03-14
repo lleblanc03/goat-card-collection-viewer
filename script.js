@@ -24,3 +24,33 @@ async function loadSheet(){
 }
 
 loadSheet()
+
+function searchCard(){
+
+ const query =
+ document.getElementById("searchBox").value.toLowerCase()
+
+ const results =
+ cards.filter(card =>
+ card.name.toLowerCase().includes(query)
+ )
+
+ let html = ""
+
+ results.forEach(card => {
+
+  html += `
+  <div class="card">
+   <h3>${card.name}</h3>
+   <p>Set: ${card.set}</p>
+   <p>Quantity: ${card.quantity}</p>
+   <p>Rarity: ${card.rarity}</p>
+   <p>Condition: ${card.condition}</p>
+  </div>
+  `
+
+ })
+
+ document.getElementById("result").innerHTML = html
+
+}
