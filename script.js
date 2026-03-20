@@ -1,7 +1,7 @@
 let loaded = false
 
 const sheetURL =
-"https://docs.google.com/spreadsheets/d/1pmPq-pckTOAxXXWfgH3C7A-2RJbNGAyeEBTXZD6rOJw/export?format=csv"
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vTWt86xWBvPc5hgePRfBhgsLT8EP98JP32QUg1Yz-l-ZR0ZC7Y56HfnaMZc2tt8KeOVH5bkgwQC0YKl/pub?output=csv"
 
 let cards = []
 
