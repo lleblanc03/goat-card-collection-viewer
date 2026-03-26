@@ -4,6 +4,7 @@ const sheetURL =
 let cards = [];
 let loaded = false;
 let metadataCache = JSON.parse(localStorage.getItem("cardMetadataCache") || "{}");
+let activeFilters = [];
 
 async function loadSheet() {
   const response = await fetch(sheetURL);
@@ -37,8 +38,15 @@ function normalize(str) {
   return (str || "").toString().toLowerCase().trim();
 }
 
-function detectQueryType(query) {
-  const q = normalize(query);
+function titleCase(str) {
+  return str
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function parseSingleFilter(input) {
+  const q = normalize(input);
 
   const knownAttributes = ["dark", "light", "earth", "water", "fire", "wind", "divine"];
   const knownTypes = [
@@ -48,44 +56,81 @@ function detectQueryType(query) {
     "flip effect monster", "union effect monster", "spirit monster", "gemini monster"
   ];
 
+  if (!q) return null;
+
   if (knownAttributes.includes(q)) {
-    return { kind: "attribute", label: `Attribute: ${q.toUpperCase()}` };
+    return {
+      kind: "attribute",
+      value: q,
+      label: `Attribute: ${q.toUpperCase()}`
+    };
   }
 
-  if (/^\d+$/.test(q) || q.startsWith("level:")) {
-    const levelValue = q.startsWith("level:") ? q.replace("level:", "").trim() : q;
-    return { kind: "level", value: levelValue, label: `Level: ${levelValue}` };
+  if (/^\d+$/.test(q)) {
+    return {
+      kind: "level",
+      value: q,
+      label: `Level: ${q}`
+    };
+  }
+
+  if (q.startsWith("level:")) {
+    const levelValue = q.replace("level:", "").trim();
+    if (levelValue) {
+      return {
+        kind: "level",
+        value: levelValue,
+        label: `Level: ${levelValue}`
+      };
+    }
   }
 
   if (knownTypes.includes(q)) {
-    const pretty = q
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-    return { kind: "type", label: `Type: ${pretty}` };
+    return {
+      kind: "type",
+      value: q,
+      label: `Type: ${titleCase(q)}`
+    };
   }
 
-  return { kind: "text", label: `Search: ${query}` };
+  return {
+    kind: "text",
+    value: q,
+    label: `Search: ${input.trim()}`
+  };
 }
 
-function renderFilterChips(query) {
+function isDuplicateFilter(newFilter) {
+  return activeFilters.some(filter =>
+    filter.kind === newFilter.kind && filter.value === newFilter.value
+  );
+}
+
+function renderFilterChips() {
   const chipBox = document.getElementById("filterChips");
 
-  if (!query || !query.trim()) {
+  if (activeFilters.length === 0) {
     chipBox.innerHTML = "";
     return;
   }
 
-  const info = detectQueryType(query);
+  chipBox.innerHTML = activeFilters.map((filter, index) => `
+    <button class="chip active-chip" onclick="removeFilter(${index})">
+      ${filter.label} ✕
+    </button>
+  `).join("");
+}
 
-  chipBox.innerHTML = `
-    <button class="chip active-chip" onclick="clearSearch()">${info.label} ✕</button>
-  `;
+function removeFilter(index) {
+  activeFilters.splice(index, 1);
+  renderFilterChips();
+  applyFilters();
 }
 
 function clearSearch() {
   document.getElementById("searchBox").value = "";
-  document.getElementById("filterChips").innerHTML = "";
+  activeFilters = [];
+  renderFilterChips();
   renderAllCards();
 }
 
@@ -198,66 +243,90 @@ async function buildMetadataIndex() {
   renderAllCards();
 }
 
+async function applyFilters() {
+  if (activeFilters.length === 0) {
+    renderAllCards();
+    return;
+  }
+
+  const enriched = [];
+
+  for (const card of cards) {
+    const details = await getCardDetails(card.name);
+    enriched.push({ ...card, details });
+  }
+
+  const filtered = enriched.filter(card => {
+    const d = card.details;
+    if (!d) return false;
+
+    return activeFilters.every(filter => {
+      if (filter.kind === "text") {
+        return normalize(card.name).includes(filter.value);
+      }
+
+      if (filter.kind === "attribute") {
+        return normalize(d.attribute) === filter.value;
+      }
+
+      if (filter.kind === "level") {
+        return String(d.level) === filter.value;
+      }
+
+      if (filter.kind === "type") {
+        const typeText = normalize(d.type);
+        const subTypeText = normalize(d.subType);
+        const raceText = normalize(d.race);
+
+        if (filter.value === "monster") {
+          return typeText.includes("monster");
+        }
+
+        if (filter.value === "spell") {
+          return typeText.includes("spell");
+        }
+
+        if (filter.value === "trap") {
+          return typeText.includes("trap");
+        }
+
+        return (
+          typeText.includes(filter.value) ||
+          subTypeText.includes(filter.value) ||
+          raceText.includes(filter.value)
+        );
+      }
+
+      return true;
+    });
+  }).map(card => ({
+    name: card.name,
+    count: card.count
+  }));
+
+  const title = activeFilters.map(f => f.label).join(" | ");
+  renderCards(filtered, title);
+}
+
 async function searchCards() {
   if (!loaded) {
     document.getElementById("result").innerHTML = "<p>Loading data...</p>";
     return;
   }
 
-  const rawQuery = document.getElementById("searchBox").value.trim();
-  const query = normalize(rawQuery);
+  const rawInput = document.getElementById("searchBox").value.trim();
+  if (!rawInput) return;
 
-  renderFilterChips(rawQuery);
+  const newFilter = parseSingleFilter(rawInput);
+  if (!newFilter) return;
 
-  if (!query) {
-    renderAllCards();
-    return;
+  if (!isDuplicateFilter(newFilter)) {
+    activeFilters.push(newFilter);
   }
 
-  const queryInfo = detectQueryType(rawQuery);
-  const basicMatches = cards.filter(card => normalize(card.name).includes(query));
-
-  if (
-    queryInfo.kind === "attribute" ||
-    queryInfo.kind === "level" ||
-    queryInfo.kind === "type" ||
-    basicMatches.length === 0
-  ) {
-    const enriched = [];
-
-    for (const card of cards) {
-      const details = await getCardDetails(card.name);
-      enriched.push({ ...card, details });
-    }
-
-    const filtered = enriched.filter(card => {
-      const d = card.details;
-      if (!d) return false;
-
-      const byName = normalize(card.name).includes(query);
-      const byAttribute = queryInfo.kind === "attribute" && normalize(d.attribute) === query;
-      const byType =
-        queryInfo.kind === "type" &&
-        (
-          normalize(d.type).includes(query) ||
-          normalize(d.subType).includes(query) ||
-          normalize(d.race).includes(query)
-        );
-      const byLevel =
-        queryInfo.kind === "level" &&
-        String(d.level) === queryInfo.value;
-
-      return byName || byAttribute || byType || byLevel;
-    }).map(card => ({
-      name: card.name,
-      count: card.count
-    }));
-
-    renderCards(filtered, `Results for "${rawQuery}"`);
-    return;
-  }
-
-  renderCards(basicMatches, `Results for "${rawQuery}"`);
+  document.getElementById("searchBox").value = "";
+  renderFilterChips();
+  await applyFilters();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
