@@ -11,27 +11,50 @@ function goSearch() {
 
 async function updateCount(delta) {
   const cardName = getQueryParam("name");
-
-  const params = new URLSearchParams({
-    name: cardName,
-    delta: delta,
-    token: "my-secret-goat-token-2026"
-  });
-
-  const response = await fetch(
-    "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec?" + params.toString()
-  );
-
-  const result = await response.json();
-
-  if (!result.ok) {
-    alert(result.error || "Update failed");
-    return;
-  }
-
   const countEl = document.getElementById("ownedCount");
-  if (countEl) {
-    countEl.textContent = result.count;
+  const increaseBtn = document.getElementById("increaseBtn");
+  const decreaseBtn = document.getElementById("decreaseBtn");
+  const statusEl = document.getElementById("updateStatus");
+
+  if (increaseBtn) increaseBtn.disabled = true;
+  if (decreaseBtn) decreaseBtn.disabled = true;
+  if (statusEl) statusEl.textContent = "Updating...";
+
+  try {
+    const params = new URLSearchParams({
+      name: cardName,
+      delta: delta,
+      token: "my-secret-goat-token-2026"
+    });
+
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec?" + params.toString()
+    );
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      alert(result.error || "Update failed");
+      return;
+    }
+
+    if (countEl) {
+      countEl.textContent = result.count;
+    }
+
+    if (statusEl) {
+      statusEl.textContent = "Updated!";
+      setTimeout(() => {
+        statusEl.textContent = "";
+      }, 1200);
+    }
+  } catch (error) {
+    console.error("updateCount error:", error);
+    alert("Update failed");
+    if (statusEl) statusEl.textContent = "";
+  } finally {
+    if (increaseBtn) increaseBtn.disabled = false;
+    if (decreaseBtn) decreaseBtn.disabled = false;
   }
 }
 
@@ -39,12 +62,20 @@ async function loadCard() {
   const cardName = getQueryParam("name");
   const container = document.getElementById("cardDetail");
 
+  if (!container) {
+    console.error('Missing element with id="cardDetail"');
+    return;
+  }
+
   if (!cardName) {
     container.innerHTML = "<p>No card selected.</p>";
     return;
   }
 
-  document.getElementById("searchBox").value = cardName;
+  const searchBox = document.getElementById("searchBox");
+  if (searchBox) {
+    searchBox.value = cardName;
+  }
 
   try {
     const sheetURL =
@@ -93,10 +124,17 @@ async function loadCard() {
         ${info.atk !== undefined ? `<p><strong>Attack:</strong> ${info.atk}</p>` : ""}
         ${info.def !== undefined ? `<p><strong>Defense:</strong> ${info.def}</p>` : ""}
         <p><strong>Card Text:</strong> ${info.desc || ""}</p>
+
+        <div class="count-actions">
+          <button id="decreaseBtn" onclick="updateCount(-1)">-1</button>
+          <button id="increaseBtn" onclick="updateCount(1)">+1</button>
+        </div>
+
+        <p id="updateStatus"></p>
       </div>
     `;
   } catch (error) {
-    console.error(error);
+    console.error("loadCard error:", error);
     container.innerHTML = "<p>There was a problem loading this card.</p>";
   }
 }
