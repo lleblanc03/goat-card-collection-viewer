@@ -12,17 +12,15 @@ function goSearch() {
 async function updateCount(delta) {
   const cardName = getQueryParam("name");
 
-  const response = await fetch("https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      name: cardName,
-      delta: delta,
-      token: "nicksgay"
-    })
+  const params = new URLSearchParams({
+    name: cardName,
+    delta: delta,
+    token: "my-secret-goat-token-2026"
   });
+
+  const response = await fetch(
+    "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec" + params.toString()
+  );
 
   const result = await response.json();
 
