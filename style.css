@@ -72,6 +72,17 @@ button {
   border-radius: 8px;
 }
 
+.count-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.count-actions button {
+  padding: 8px 12px;
+  font-size: 16px;
+}
+
 @media (max-width: 700px) {
   .card-row {
     flex-direction: column;
