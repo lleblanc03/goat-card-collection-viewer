@@ -29,6 +29,12 @@ async function updateCount(delta) {
     return;
   }
 
+  const countEl = document.getElementById("ownedCount");
+  if (countEl) {
+    countEl.textContent = result.count;
+  }
+}
+
   await loadCard();
 }
 
@@ -81,7 +87,7 @@ async function loadCard() {
         <h1>${info.name}</h1>
         <img class="detail-image" src="${info.card_images?.[0]?.image_url || ""}" alt="${info.name}">
 
-        <p><strong>You own:</strong> ${ownedCount}</p>
+        <p><strong>You own:</strong> <span id="ownedCount">${ownedCount}</span></p>
         <p><strong>Card Type:</strong> ${info.type || ""}</p>
         ${info.humanReadableCardType ? `<p><strong>Card Sub-Type:</strong> ${info.humanReadableCardType}</p>` : ""}
         ${info.attribute ? `<p><strong>Attribute:</strong> ${info.attribute}</p>` : ""}
