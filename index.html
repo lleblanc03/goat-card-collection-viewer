@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tony's Card Collection</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tony's Card Collection</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1>GOAT Collection Viewer</h1>
+  <h1>GOAT Collection Viewer</h1>
 
-<input id="searchBox" placeholder="Search card name">
+  <div class="topbar">
+    <input id="searchBox" placeholder="Search by name, attribute, type, or level">
+    <button onclick="searchCards()">Search</button>
+    <button onclick="renderAllCards()">Show Full List</button>
+    <button onclick="buildMetadataIndex()">Build Search Index</button>
+  </div>
 
-<button onclick="searchCard()">Search</button>
+  <p class="hint">
+    Examples: Jinzo, DARK, Spell Card, Warrior, 4, level:4
+  </p>
 
-<div id="result"></div>
+  <div id="status"></div>
+  <div id="result"></div>
 
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
