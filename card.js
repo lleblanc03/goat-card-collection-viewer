@@ -29,12 +29,6 @@ async function updateCount(delta) {
     return;
   }
 
-  const countEl = document.getElementById("ownedCount");
-  if (countEl) {
-    countEl.textContent = result.count;
-  }
-}
-
   await loadCard();
 }
 
