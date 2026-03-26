@@ -37,6 +37,58 @@ function normalize(str) {
   return (str || "").toString().toLowerCase().trim();
 }
 
+function detectQueryType(query) {
+  const q = normalize(query);
+
+  const knownAttributes = ["dark", "light", "earth", "water", "fire", "wind", "divine"];
+  const knownTypes = [
+    "monster", "spell", "trap",
+    "spell card", "trap card",
+    "effect monster", "normal monster", "fusion monster", "ritual monster", "toon monster",
+    "flip effect monster", "union effect monster", "spirit monster", "gemini monster"
+  ];
+
+  if (knownAttributes.includes(q)) {
+    return { kind: "attribute", label: `Attribute: ${q.toUpperCase()}` };
+  }
+
+  if (/^\d+$/.test(q) || q.startsWith("level:")) {
+    const levelValue = q.startsWith("level:") ? q.replace("level:", "").trim() : q;
+    return { kind: "level", value: levelValue, label: `Level: ${levelValue}` };
+  }
+
+  if (knownTypes.includes(q)) {
+    const pretty = q
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    return { kind: "type", label: `Type: ${pretty}` };
+  }
+
+  return { kind: "text", label: `Search: ${query}` };
+}
+
+function renderFilterChips(query) {
+  const chipBox = document.getElementById("filterChips");
+
+  if (!query || !query.trim()) {
+    chipBox.innerHTML = "";
+    return;
+  }
+
+  const info = detectQueryType(query);
+
+  chipBox.innerHTML = `
+    <button class="chip active-chip" onclick="clearSearch()">${info.label} ✕</button>
+  `;
+}
+
+function clearSearch() {
+  document.getElementById("searchBox").value = "";
+  document.getElementById("filterChips").innerHTML = "";
+  renderAllCards();
+}
+
 function renderCards(list, title = "") {
   const result = document.getElementById("result");
 
@@ -152,22 +204,23 @@ async function searchCards() {
     return;
   }
 
-  const query = normalize(document.getElementById("searchBox").value);
+  const rawQuery = document.getElementById("searchBox").value.trim();
+  const query = normalize(rawQuery);
+
+  renderFilterChips(rawQuery);
 
   if (!query) {
     renderAllCards();
     return;
   }
 
+  const queryInfo = detectQueryType(rawQuery);
   const basicMatches = cards.filter(card => normalize(card.name).includes(query));
 
-  const knownAttributes = ["dark", "light", "earth", "water", "fire", "wind", "divine"];
-  const looksLikeLevel = /^\d+$/.test(query) || query.startsWith("level:");
-  const levelValue = query.startsWith("level:") ? query.replace("level:", "").trim() : query;
-
   if (
-    knownAttributes.includes(query) ||
-    looksLikeLevel ||
+    queryInfo.kind === "attribute" ||
+    queryInfo.kind === "level" ||
+    queryInfo.kind === "type" ||
     basicMatches.length === 0
   ) {
     const enriched = [];
@@ -182,22 +235,40 @@ async function searchCards() {
       if (!d) return false;
 
       const byName = normalize(card.name).includes(query);
-      const byAttribute = normalize(d.attribute) === query;
-      const byType = normalize(d.type).includes(query);
-      const byRace = normalize(d.race).includes(query);
-      const byLevel = looksLikeLevel && String(d.level) === levelValue;
+      const byAttribute = queryInfo.kind === "attribute" && normalize(d.attribute) === query;
+      const byType =
+        queryInfo.kind === "type" &&
+        (
+          normalize(d.type).includes(query) ||
+          normalize(d.subType).includes(query) ||
+          normalize(d.race).includes(query)
+        );
+      const byLevel =
+        queryInfo.kind === "level" &&
+        String(d.level) === queryInfo.value;
 
-      return byName || byAttribute || byType || byRace || byLevel;
+      return byName || byAttribute || byType || byLevel;
     }).map(card => ({
       name: card.name,
       count: card.count
     }));
 
-    renderCards(filtered, `Results for "${document.getElementById("searchBox").value}"`);
+    renderCards(filtered, `Results for "${rawQuery}"`);
     return;
   }
 
-  renderCards(basicMatches, `Results for "${document.getElementById("searchBox").value}"`);
+  renderCards(basicMatches, `Results for "${rawQuery}"`);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const searchBox = document.getElementById("searchBox");
+
+  searchBox.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      searchCards();
+    }
+  });
+});
 
 loadSheet();
