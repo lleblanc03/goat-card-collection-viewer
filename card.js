@@ -12,7 +12,7 @@ function goSearch() {
 async function updateCount(delta) {
   const cardName = getQueryParam("name");
 
-  const response = await fetch("YOUR_APPS_SCRIPT_WEB_APP_URL", {
+  const response = await fetch("https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -20,7 +20,7 @@ async function updateCount(delta) {
     body: JSON.stringify({
       name: cardName,
       delta: delta,
-      token: "CHANGE_ME_SHARED_TOKEN"
+      token: "nicksgay"
     })
   });
 
