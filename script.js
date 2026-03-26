@@ -58,6 +58,15 @@ function parseSingleFilter(input) {
 
   if (!q) return null;
 
+  const ownMatch = q.match(/^(own|count|you own)\s*:\s*(\d+)$/);
+  if (ownMatch) {
+    return {
+      kind: "count",
+      value: ownMatch[2],
+      label: `You own: ${ownMatch[2]}`
+    };
+  }
+
   if (knownAttributes.includes(q)) {
     return {
       kind: "attribute",
@@ -263,6 +272,10 @@ async function applyFilters() {
     return activeFilters.every(filter => {
       if (filter.kind === "text") {
         return normalize(card.name).includes(filter.value);
+      }
+
+      if (filter.kind === "count") {
+        return Number(card.count) === Number(filter.value);
       }
 
       if (filter.kind === "attribute") {
