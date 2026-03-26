@@ -19,7 +19,7 @@ async function updateCount(delta) {
   });
 
   const response = await fetch(
-    "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec" + params.toString()
+    "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec?" + params.toString()
   );
 
   const result = await response.json();
