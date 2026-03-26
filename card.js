@@ -9,6 +9,31 @@ function goSearch() {
   window.location.href = `index.html?search=${encodeURIComponent(query)}`;
 }
 
+async function updateCount(delta) {
+  const cardName = getQueryParam("name");
+
+  const response = await fetch("YOUR_APPS_SCRIPT_WEB_APP_URL", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: cardName,
+      delta: delta,
+      token: "CHANGE_ME_SHARED_TOKEN"
+    })
+  });
+
+  const result = await response.json();
+
+  if (!result.ok) {
+    alert(result.error || "Update failed");
+    return;
+  }
+
+  await loadCard();
+}
+
 async function loadCard() {
   const cardName = getQueryParam("name");
   const container = document.getElementById("cardDetail");
