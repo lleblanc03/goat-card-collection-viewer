@@ -6,7 +6,7 @@ function getQueryParam(name) {
 function goSearch() {
   const query = document.getElementById("searchBox").value.trim();
   if (!query) return;
-  window.location.href = `index.html?search=${encodeURIComponent(query)}`;
+  window.location.href = `search.html?search=${encodeURIComponent(query)}`;
 }
 
 async function updateCount(delta) {
