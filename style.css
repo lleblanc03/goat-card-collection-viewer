@@ -1,6 +1,11 @@
 body {
+  margin: 0;
   font-family: Arial;
-  padding: 20px;
+
+  background-image: url("background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .topbar {
