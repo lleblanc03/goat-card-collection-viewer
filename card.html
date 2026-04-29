@@ -7,15 +7,31 @@
 </head>
 <body>
 
+<header>
+  <div class="banner">
+    <img src="banner.jpg" alt="Tony's Card Collection Banner">
+  </div>
+
+  <nav class="navbar">
+    <a href="home.html">Home</a>
+    <a href="search.html">Search</a>
+    <a href="youtube.html">YouTube</a>
+    <a href="winners.html">Current Winners</a>
+    <a href="board.html">Posting Board</a>
+  </nav>
+</header>
+
+<main>
   <div class="topbar">
     <input id="searchBox" placeholder="Search card name">
     <button onclick="goSearch()">Search</button>
     <button onclick="history.back()">Back</button>
-    <button onclick="window.location.href='index.html'">Full List</button>
+    <button onclick="window.location.href='search.html'">Full List</button>
   </div>
 
   <div id="cardDetail"></div>
+</main>
 
-  <script src="card.js?v=4"></script>
+<script src="card.js?v=5"></script>
 </body>
 </html>
