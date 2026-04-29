@@ -187,3 +187,33 @@ textarea {
   padding: 15px;
   border-radius: 8px;
 }
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.post-form textarea {
+  min-height: 120px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.post {
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.post h3 {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.post small {
+  color: #666;
+}
