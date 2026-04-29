@@ -13,7 +13,7 @@
   </div>
 
   <nav class="navbar">
-    <a href="index.html">Home</a>
+    <a href="home.html">Home</a>
     <a href="search.html">Search</a>
     <a href="youtube.html">YouTube</a>
     <a href="winners.html">Current Winners</a>
@@ -24,14 +24,18 @@
 <main>
   <h1>Posting Board</h1>
 
-  <input id="posterName" placeholder="Your name">
-  <textarea id="postText" placeholder="Write a message..."></textarea>
-  <button>Post</button>
-
-  <div id="posts">
-    <p>Posts will appear here.</p>
+  <div class="post-form">
+    <input id="posterName" placeholder="Your name">
+    <textarea id="postMessage" placeholder="Write a message..."></textarea>
+    <button onclick="submitPost()">Post</button>
   </div>
+
+  <p id="postStatus"></p>
+
+  <h2>Recent Posts</h2>
+  <div id="posts"></div>
 </main>
 
+<script src="board.js"></script>
 </body>
 </html>
