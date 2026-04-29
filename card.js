@@ -20,12 +20,12 @@ async function updateCount(delta) {
   if (decreaseBtn) decreaseBtn.disabled = true;
   if (statusEl) statusEl.textContent = "Updating...";
 
-  try {
-    const params = new URLSearchParams({
-      name: cardName,
-      delta: delta,
-      token: "my-secret-goat-token-2026"
-    });
+  const params = new URLSearchParams({
+    action: "updateCount",
+    name: cardName,
+    delta: delta,
+    token: "my-secret-goat-token-2026"
+  });
 
     const response = await fetch(
       "https://script.google.com/macros/s/AKfycbzlCrYSyD72xh2X1qjGFx7AW2pIsRFFox2FZKhbi4TSUGNy8G_6T4k_oTbdkzQbpcjD/exec?" + params.toString()
