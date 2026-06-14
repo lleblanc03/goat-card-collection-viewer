@@ -13,7 +13,7 @@ async function submitPost() {
     return;
   }
 
-  status.textContent = "Posting...";
+  status.textContent = "Posting....";
 
   const params = new URLSearchParams({
     action: "addPost",
